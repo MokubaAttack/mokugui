@@ -80,7 +80,7 @@ class mokupipe:
 		):
 		if not(os.path.exists(base_safe)):
 			memo="the checkpoint file does not exist."
-			return -1
+			return memo
 		try:
 			f=safetensors.safe_open(base_safe, framework="pt", device="cpu")
 			self.meta_dict["ckpt"]=f.metadata()["id"]
@@ -102,11 +102,11 @@ class mokupipe:
 		self.is_sdxl="conditioner.embedders.1.model.transformer.resblocks.9.mlp.c_proj.weight" in sd
 
 		if self.is_sdxl:
-			self.pipe=StableDiffusionXLPAGPipeline.from_single_file(base_safe,torch_dtype=self.dtype)
+			self.pipe=StableDiffusionXLPAGPipeline.from_single_file(base_safe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 			if os.path.isfile(vae_safe):
 				self.pipe.vae=AutoencoderKL.from_single_file(vae_safe,torch_dtype=self.dtype)
 		else:
-			self.pipe=StableDiffusionPAGPipeline.from_single_file(base_safe,torch_dtype=self.dtype)
+			self.pipe=StableDiffusionPAGPipeline.from_single_file(base_safe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 			if os.path.isfile(vae_safe):
 				self.pipe.vae=AutoencoderKL.from_single_file(vae_safe,torch_dtype=self.dtype)
 		self.pipe.to(self.dev)
@@ -396,42 +396,18 @@ class mokupipe:
 			memo="You must make a pipeline."
 			return memo
 		if self.is_sdxl:
-			self.pipe=StableDiffusionXLPAGPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)
+			self.pipe=StableDiffusionXLPAGPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 		else:
-			self.pipe=StableDiffusionPAGPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)
+			self.pipe=StableDiffusionPAGPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 		self.pipe.to(self.dev)
 		prompt=prompt+self.prompt_a
 		n_prompt=n_prompt+self.n_prompt_a
 		self.meta_dict["pr"]=prompt
 		self.meta_dict["ne"]=n_prompt
-		memo="seed\n"
-		for i in seed:
-			memo=memo+str(i)+"\n"
-		memo=memo+"ckpt : "+self.meta_dict["ckpt_name"]+"\n"
-		if self.meta_dict["vae_name"]!="":
-			memo=memo+"vae : "+self.meta_dict["vae_name"]+"\n"
-		memo=memo+"scheduler : "+self.meta_dict["sa"]+"\n"
-		if self.meta_dict["loras"]!=[]:
-			memo=memo+"lora : weight\n"
-			for i in range(len(self.meta_dict["loras"])):
-				memo=memo+self.meta_dict["loras"][i]+" : "+str(self.meta_dict["lora_weights"][i])+"\n"
-		if self.meta_dict["pos"]!=[]:
-			memo=memo+"Positive Embedding\n"
-			for i in range(len(self.meta_dict["pos"])):
-				memo=memo+self.meta_dict["pos"][i]+"\n"
-		if self.meta_dict["neg"]!=[]:
-			memo=memo+"Negative Embedding\n"
-			for i in range(len(self.meta_dict["neg"])):
-				memo=memo+self.meta_dict["neg"][i]+"\n"
-		memo=memo+"num_inference_steps : "+str(step)+"\n"
 		self.meta_dict["st"]=str(step)
-		memo=memo+"guidance_scale : "+str(gs)+"\n"
 		self.meta_dict["cf"]=str(gs)
-		memo=memo+"clip_skip : "+str(cs)+"\n"
 		self.meta_dict["cl"]=str(cs)
-		memo=memo+"pag_scale : "+str(pag)+"\n"
 		self.meta_dict["pag"]=str(pag)
-		memo=memo+"prompt\n"+prompt+"\nnegative prompt\n"+n_prompt+"\n"
 		for k in ["hs","ds","hu","hum","up","ccs","cont","tu","tum"]:
 			if k in self.meta_dict:
 				del self.meta_dict[k]
@@ -500,9 +476,9 @@ class mokupipe:
 			memo="You must make a pipeline."
 			return memo
 		if self.is_sdxl:
-			self.pipe=StableDiffusionXLPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)
+			self.pipe=StableDiffusionXLPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 		else:
-			self.pipe=StableDiffusionPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)
+			self.pipe=StableDiffusionPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 		self.pipe.to(self.dev)
 		prompt=prompt+self.prompt_a
 		n_prompt=n_prompt+self.n_prompt_a
@@ -637,20 +613,20 @@ class mokupipe:
 
 		if ccs==None:
 			if self.is_sdxl:
-				self.pipe=StableDiffusionXLPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)
+				self.pipe=StableDiffusionXLPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 			else:
-				self.pipe=StableDiffusionPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)
+				self.pipe=StableDiffusionPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 			for k in ["cont","ccs"]:
 				if k in self.meta_dict:
 					del self.meta_dict[k]
 		else:
 			if self.is_sdxl:
-				controlnet = ControlNetModel.from_pretrained("OzzyGT/SDXL_Controlnet_Tile_Realistic",torch_dtype=self.dtype,variant="fp16")
-				self.pipe=StableDiffusionXLControlNetPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,controlnet=controlnet)
+				controlnet = ControlNetModel.from_pretrained("OzzyGT/SDXL_Controlnet_Tile_Realistic",torch_dtype=self.dtype,variant="fp16",cache_dir=os.getcwd()+"/pipecache")
+				self.pipe=StableDiffusionXLControlNetPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,controlnet=controlnet,cache_dir=os.getcwd()+"/pipecache")
 				self.meta_dict["cont"]=str(370104)
 			else:
-				controlnet = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',torch_dtype=self.dtype)
-				self.pipe=StableDiffusionControlNetPAGInpaintPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,controlnet=controlnet)
+				controlnet = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
+				self.pipe=StableDiffusionControlNetPAGInpaintPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,controlnet=controlnet,cache_dir=os.getcwd()+"/pipecache")
 				self.meta_dict["cont"]=str(67566)
 			self.meta_dict["ccs"]=str(ccs)
 		self.pipe.to(self.dev)
