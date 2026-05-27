@@ -56,8 +56,8 @@ class mokuanipipe:
 		
 		if loras!=[]:
 			if len(loras)!=len(lora_weights):
-				print("the number of lora does not equal the number of lora weight.")
-				return -1
+				memo="the number of lora does not equal the number of lora weight."
+				return memo
 			i=0
 			meta_id_list=[]
 			meta_weight_list=[]
@@ -66,7 +66,6 @@ class mokuanipipe:
 					line=line.replace(".safetensors","")
 				if os.path.exists(line+".safetensors"):
 					self.pipe.load_lora_weights(line+".safetensors",adapter_name="style"+str(i))
-					print(line+".safetensors is loaded.")
 					self.pipe.set_adapters("style"+str(i), adapter_weights=[lora_weights[i]])
 					self.pipe.fuse_lora()
 					self.pipe.unload_lora_weights()
