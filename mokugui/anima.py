@@ -42,7 +42,7 @@ class mokuanipipe:
 		else:
 			dtype=torch.float32
 
-		self.pipe = AnimaPipeline.from_single_file(base_safe,torch_dtype=dtype)
+		self.pipe = AnimaPipeline.from_single_file(base_safe,torch_dtype=dtype,cache_dir=os.getcwd()+"/pipecache")
 		self.pipe.to(dev)
 		
 		if sample in ["euler","euler_a_rf","euler_ancestral_rf"]:
