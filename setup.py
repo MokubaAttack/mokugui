@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
 	name='mokugui',
 	version='1.0.0',
-	packages=find_packages(),
+	packages=["mokugui"],
 	include_package_data=True,
 	author='mokuba_attack',
 	description='This is a script that I use when I create images by diffusers.',
