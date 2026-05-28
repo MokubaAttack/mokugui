@@ -1,8 +1,94 @@
 import FreeSimpleGUI as sg
 import pyperclip
 import tkinter as tk
+import json
+import os
+
+def setvalues():
+	iv={
+		"pr":"","ne":"",
+		"n":"10",
+		"st":"32",
+		"sa":"flowmatch_euler",
+		"sc":"uniform",
+		"cf":"4",
+		"se":"0",
+		"x":"896","y":"1152",
+		"ds":"0.4",
+		"hu":"1.5",
+		"hs":"16",
+		"hum":"NEAREST",
+		"lora1":"","lora2":"","lora3":"","lora4":"","w1":"1.0","w2":"1.0","w3":"1.0","w4":"1.0",
+		"input":"","out":"",
+		"dtype":"bf16","dev":"xpu",
+	}
+	if os.path.exists(os.getcwd()+"/anima_default.json"):
+		f=open(os.getcwd()+"/anima_default.json","r")
+		sd=json.load(f)
+		f.close()
+		for k in iv:
+			if k in sd:
+				iv[k]=sd[k]
+	return iv
+
+def loadvalues(win):
+	f=open(os.getcwd()+"/anima_default.json","r")
+	sd=json.load(f)
+	f.close()
+	iv={
+		"pr":"","ne":"",
+		"n":"10",
+		"st":"32",
+		"sa":"flowmatch_euler",
+		"sc":"uniform",
+		"cf":"4",
+		"se":"0",
+		"x":"896","y":"1152",
+		"ds":"0.4",
+		"hu":"1.5",
+		"hs":"16",
+		"hum":"NEAREST",
+		"lora1":"","lora2":"","lora3":"","lora4":"","w1":"1.0","w2":"1.0","w3":"1.0","w4":"1.0",
+		"input":"","out":"",
+		"dtype":"bf16","dev":"xpu",
+	}
+	for k in iv:
+		if k in sd:
+			win[k].update(sd[k])
+		else:
+			win[k].update(iv[k])
+
+def savevalues(vs):
+	iv={
+		"pr":"","ne":"",
+		"n":"10",
+		"st":"32",
+		"sa":"flowmatch_euler",
+		"sc":"uniform",
+		"cf":"4",
+		"se":"0",
+		"x":"896","y":"1152",
+		"ds":"0.4",
+		"hu":"1.5",
+		"hs":"16",
+		"hum":"NEAREST",
+		"lora1":"","lora2":"","lora3":"","lora4":"","w1":"1.0","w2":"1.0","w3":"1.0","w4":"1.0",
+		"input":"","out":"",
+		"dtype":"bf16","dev":"xpu",
+	}
+	for k in iv:
+		iv[k]=vs[k]
+	f=open(os.getcwd()+"/anima_default.json","w")
+	json.dump(iv,f)
+	f.close()
 
 if __name__=="__main__":
+	iv=setvalues()
+	if os.path.exists(os.getcwd()+"/anima_default.json"):
+		d=False
+	else:
+		d=True
+	
 	keys=[
 		"input","pr","ne","st","cf","se","n","x","y","lora1","lora2","lora3","lora4","w1","w2","w3","w4","hu","hs","hum","ds","sa","sc","out"
 	]
@@ -22,68 +108,69 @@ if __name__=="__main__":
 
 	col1=[
 		[sg.Text("prompt")],
-		[sg.Multiline(size=(50, 5),key="pr",right_click_menu=grp_rclick_menu["pr"])]
+		[sg.Multiline(iv["pr"],size=(50, 5),key="pr",right_click_menu=grp_rclick_menu["pr"])]
 	]
 	col2=[
 		[sg.Text("negative prompt")],
-		[sg.Multiline(size=(50, 5),key="ne",right_click_menu=grp_rclick_menu["ne"])]
+		[sg.Multiline(iv["ne"],size=(50, 5),key="ne",right_click_menu=grp_rclick_menu["ne"])]
 	]
 	col3=[
-		[sg.Text("Pic number"), sg.Input("10",key="n",right_click_menu=grp_rclick_menu["n"], size=(10, 1))],
-		[sg.Text("Steps"), sg.Input("32",key="st",right_click_menu=grp_rclick_menu["st"], size=(10, 1))],
-		[sg.Text("Sampler"), sg.Combo(default_value="flowmatch_euler",values=sa_list,key="sa")],
-		[sg.Text("Schedule type"), sg.Combo(default_value="uniform",values=sc_list,key="sc")],
-		[sg.Text("CFG scale"), sg.Input("4",key="cf",right_click_menu=grp_rclick_menu["cf"], size=(10, 1))],
-		[sg.Text("Seed"), sg.Input("0",key="se",right_click_menu=grp_rclick_menu["se"], size=(20, 1))],
+		[sg.Text("Pic number"), sg.Input(iv["n"],key="n",right_click_menu=grp_rclick_menu["n"], size=(10, 1))],
+		[sg.Text("Steps"), sg.Input(iv["st"],key="st",right_click_menu=grp_rclick_menu["st"], size=(10, 1))],
+		[sg.Text("Sampler"), sg.Combo(default_value=iv["sa"],values=sa_list,key="sa")],
+		[sg.Text("Schedule type"), sg.Combo(default_value=iv["sc"],values=sc_list,key="sc")],
+		[sg.Text("CFG scale"), sg.Input(iv["cf"],key="cf",right_click_menu=grp_rclick_menu["cf"], size=(10, 1))],
+		[sg.Text("Seed"), sg.Input(iv["se"],key="se",right_click_menu=grp_rclick_menu["se"], size=(20, 1))],
 	]
 	col4=[
-		[sg.Text("width"), sg.Input("896",key="x",right_click_menu=grp_rclick_menu["x"], size=(10, 1))],
-		[sg.Text("height"), sg.Input("1152",key="y",right_click_menu=grp_rclick_menu["y"], size=(10, 1))],
-		[sg.Text("Denoising strength"), sg.Input("0.4",key="ds",right_click_menu=grp_rclick_menu["ds"], size=(10, 1))],
-		[sg.Text("Hires upscale"), sg.Input("1.5",key="hu",right_click_menu=grp_rclick_menu["hu"], size=(10, 1))],
-		[sg.Text("Hires steps"), sg.Input("16",key="hs",right_click_menu=grp_rclick_menu["hs"], size=(10, 1))],
-		[sg.Text("Hires upscaler"), sg.Combo(default_value="NEAREST",key="hum",values=hum_list,enable_events=True)],
+		[sg.Text("width"), sg.Input(iv["x"],key="x",right_click_menu=grp_rclick_menu["x"], size=(10, 1))],
+		[sg.Text("height"), sg.Input(iv["y"],key="y",right_click_menu=grp_rclick_menu["y"], size=(10, 1))],
+		[sg.Text("Denoising strength"), sg.Input(iv["ds"],key="ds",right_click_menu=grp_rclick_menu["ds"], size=(10, 1))],
+		[sg.Text("Hires upscale"), sg.Input(iv["hu"],key="hu",right_click_menu=grp_rclick_menu["hu"], size=(10, 1))],
+		[sg.Text("Hires steps"), sg.Input(iv["hs"],key="hs",right_click_menu=grp_rclick_menu["hs"], size=(10, 1))],
+		[sg.Text("Hires upscaler"), sg.Combo(default_value=iv["hum"],key="hum",values=hum_list,enable_events=True)],
 	]
 
 	layout=[
 		[
 			sg.Text("ckpt"),
-			sg.Input(key="input",right_click_menu=grp_rclick_menu["input"]),sg.FilesBrowse(file_types=(('ckpt file', '.safetensors'),))
+			sg.Input(iv["input"],key="input",right_click_menu=grp_rclick_menu["input"]),sg.FilesBrowse(file_types=(('ckpt file', '.safetensors'),))
 		],
 		[
 			sg.Text("lora1"),
-			sg.Input(key="lora1",right_click_menu=grp_rclick_menu["lora1"]),sg.FilesBrowse(file_types=(('lora file', '.safetensors'),)),
+			sg.Input(iv["lora1"],key="lora1",right_click_menu=grp_rclick_menu["lora1"]),sg.FilesBrowse(file_types=(('lora file', '.safetensors'),)),
 			sg.Text("weight"),
-			sg.Input("1.0",key="w1",right_click_menu=grp_rclick_menu["w1"], size=(10, 1))
+			sg.Input(iv["w1"],key="w1",right_click_menu=grp_rclick_menu["w1"], size=(10, 1))
 		],
 		[
 			sg.Text("lora2"),
-			sg.Input(key="lora2",right_click_menu=grp_rclick_menu["lora2"]),sg.FilesBrowse(file_types=(('lora file', '.safetensors'),)),
+			sg.Input(iv["lora2"],key="lora2",right_click_menu=grp_rclick_menu["lora2"]),sg.FilesBrowse(file_types=(('lora file', '.safetensors'),)),
 			sg.Text("weight"),
-			sg.Input("1.0",key="w2",right_click_menu=grp_rclick_menu["w2"], size=(10, 1))
+			sg.Input(iv["w2"],key="w2",right_click_menu=grp_rclick_menu["w2"], size=(10, 1))
 		],
 		[
 			sg.Text("lora3"),
-			sg.Input(key="lora3",right_click_menu=grp_rclick_menu["lora3"]),sg.FilesBrowse(file_types=(('lora file', '.safetensors'),)),
+			sg.Input(iv["lora3"],key="lora3",right_click_menu=grp_rclick_menu["lora3"]),sg.FilesBrowse(file_types=(('lora file', '.safetensors'),)),
 			sg.Text("weight"),
-			sg.Input("1.0",key="w3",right_click_menu=grp_rclick_menu["w3"], size=(10, 1))
+			sg.Input(iv["w3"],key="w3",right_click_menu=grp_rclick_menu["w3"], size=(10, 1))
 		],
 		[
 			sg.Text("lora4"),
-			sg.Input(key="lora4",right_click_menu=grp_rclick_menu["lora4"]),sg.FilesBrowse(file_types=(('lora file', '.safetensors'),)),
+			sg.Input(iv["lora4"],key="lora4",right_click_menu=grp_rclick_menu["lora4"]),sg.FilesBrowse(file_types=(('lora file', '.safetensors'),)),
 			sg.Text("weight"),
-			sg.Input("1.0",key="w4",right_click_menu=grp_rclick_menu["w4"], size=(10, 1))
+			sg.Input(iv["w4"],key="w4",right_click_menu=grp_rclick_menu["w4"], size=(10, 1))
 		],
 		[sg.Column(col1),sg.Column(col2)],
 		[sg.Column(col3),sg.Column(col4)],
 		[
-			sg.Text("dtype"), sg.Combo(default_value="bf16",values=["f32","f16","bf16"],key="dtype"),
-			sg.Text("device"), sg.Combo(default_value="xpu",values=["cpu","cuda","mps","xpu"],key="dev")
+			sg.Text("dtype"), sg.Combo(default_value=iv["dtype"],values=["f32","f16","bf16"],key="dtype"),
+			sg.Text("device"), sg.Combo(default_value=iv["dev"],values=["cpu","cuda","mps","xpu"],key="dev")
 		],
 		[
 			sg.Text("output folder"),
-			sg.Input(key="out",right_click_menu=grp_rclick_menu["out"]),sg.FolderBrowse()
+			sg.Input(iv["out"],key="out",right_click_menu=grp_rclick_menu["out"]),sg.FolderBrowse()
 		],
+		[sg.Button("Save Params",key="save"),sg.Button("Load Params",key="load",disabled=d)],
 		[sg.Button('RUN', key='RUN'),sg.Button('EXIT', key='EXIT')]
 	]
 
@@ -130,6 +217,17 @@ if __name__=="__main__":
 				value = sg.popup_get_file('upscaler file',file_types=(('upscaler File', '.pth'),))
 				if value!=None:
 					window["hum"].update(value)
+		elif event=="save":
+			try:
+				savevalues(values)
+				window["load"].update(disabled=False)
+			except:
+				pass
+		elif event=="load":
+			try:
+				loadvalues(window)
+			except:
+				pass
 
 	window.close()
 
