@@ -26,7 +26,7 @@ class mokuanipipe:
 		):
 		if not(os.path.exists(base_safe)):
 			memo="the checkpoint file does not exist."
-			return -1
+			return memo
 		try:
 			f=safetensors.safe_open(base_safe, framework="pt", device="cpu")
 			self.meta_dict["ckpt"]=f.metadata()["id"]
