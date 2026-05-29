@@ -20,7 +20,7 @@ def setvalues():
 		"input":"","out":"",
 		"dtype":"bf16","dev":"xpu",
 		"vae":"","p1":"","p2":"","p3":"","n1":"","n2":"","n3":"",
-		"cl":"2","pag":"3.0","pic":""
+		"cl":"2","pag":"3.0","pic":"","ccs":"1.0"
 	}
 	if os.path.exists(os.getcwd()+"/tile_default.json"):
 		f=open(os.getcwd()+"/tile_default.json","r")
@@ -50,7 +50,7 @@ def loadvalues(win):
 		"input":"","out":"",
 		"dtype":"bf16","dev":"xpu",
 		"vae":"","p1":"","p2":"","p3":"","n1":"","n2":"","n3":"",
-		"cl":"2","pag":"3.0","pic":""
+		"cl":"2","pag":"3.0","pic":"","ccs":"1.0"
 	}
 	for k in iv:
 		if k in sd:
@@ -74,7 +74,7 @@ def savevalues(vs):
 		"input":"","out":"",
 		"dtype":"bf16","dev":"xpu",
 		"vae":"","p1":"","p2":"","p3":"","n1":"","n2":"","n3":"",
-		"cl":"2","pag":"3.0","pic":""
+		"cl":"2","pag":"3.0","pic":"","ccs":"1.0"
 	}
 	for k in iv:
 		iv[k]=vs[k]
@@ -91,7 +91,7 @@ if __name__=="__main__":
 	
 	keys=[
 		"input","pr","ne","st","cf","se","n","lora1","lora2","lora3","lora4","w1","w2","w3","w4","hu","hum","ds","sa","sc","out",
-		"vae","p1","p2","p3","n1","n2","n3","cl","pag","pic"
+		"vae","p1","p2","p3","n1","n2","n3","cl","pag","pic","ccs"
 	]
 
 	sa_list=[
@@ -145,6 +145,7 @@ if __name__=="__main__":
 		[sg.Text("Denoising strength"), sg.Input(iv["ds"],key="ds",right_click_menu=grp_rclick_menu["ds"], size=(10, 1))],
 		[sg.Text("Tile upscale"), sg.Input(iv["hu"],key="hu",right_click_menu=grp_rclick_menu["hu"], size=(10, 1))],
 		[sg.Text("Tile upscaler"), sg.Combo(default_value=iv["hum"],key="hum",values=hum_list,enable_events=True)],
+		[sg.Text("controlnet_conditioning_scale"), sg.Input(iv["ccs"],key="ccs",right_click_menu=grp_rclick_menu["ccs"], size=(10, 1))]
 	]
 	col5=[
 		[sg.Text("positive embedding")],
