@@ -106,7 +106,7 @@ class mokuanipipe:
 		self.meta_dict["lora_weights"]=lora_weights
 		return 1
 
-	def text2image(self,prompt,n_prompt,gs,step,seed,x,y,out,out_folder,j_or_p,url):
+	def text2image(self,prompt,n_prompt,gs,step,seed,x,y,out,out_folder,url):
 		if self.pipe==None:
 			memo="You must make a pipeline."
 			return memo
@@ -142,10 +142,7 @@ class mokuanipipe:
 
 			if out:
 				self.meta_dict["se"]=str(i)
-				if j_or_p=="j":
-					self.meta_dict["input"]=out_folder+"/"+str(j)+"_"+str(i)+".jpg"
-				else:
-					self.meta_dict["input"]=out_folder+"/"+str(j)+"_"+str(i)+".png"
+				self.meta_dict["input"]=out_folder+"/"+str(j)+"_"+str(i)+".png"
 				plus_meta(self.meta_dict,image)
 				if url!="":
 					to_discord(self.meta_dict["input"],url)
@@ -154,7 +151,7 @@ class mokuanipipe:
 
 		return images
 		
-	def image2imageup(self,prompt,n_prompt,gs,step,seed,x,y,ss,images,out,out_folder,j_or_p,url):
+	def image2imageup(self,prompt,n_prompt,gs,step,seed,x,y,ss,images,out,out_folder,url):
 		if self.pipe==None:
 			memo="You must make a pipeline."
 			return memo
@@ -229,10 +226,7 @@ class mokuanipipe:
 		
 			if out:
 				self.meta_dict["se"]=str(i)
-				if j_or_p=="j":
-					self.meta_dict["input"]=out_folder+"/"+str(j)+"_"+str(i)+".jpg"
-				else:
-					self.meta_dict["input"]=out_folder+"/"+str(j)+"_"+str(i)+".png"
+				self.meta_dict["input"]=out_folder+"/"+str(j)+"_"+str(i)+".png"
 				plus_meta(self.meta_dict,image)
 				if url!="":
 					to_discord(self.meta_dict["input"],url)
