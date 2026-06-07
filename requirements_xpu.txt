@@ -2,7 +2,6 @@ freesimplegui
 compel
 diffusers==0.37.0
 pyperclip
-pyexiv2
 triton-xpu @ https://download-r2.pytorch.org/whl/triton_xpu-3.6.0-cp312-cp312-win_amd64.whl
 torch @ https://download-r2.pytorch.org/whl/xpu/torch-2.10.0%2Bxpu-cp312-cp312-win_amd64.whl
 torchvision @ https://download-r2.pytorch.org/whl/xpu/torchvision-0.25.0%2Bxpu-cp312-cp312-win_amd64.whl
