@@ -7,7 +7,6 @@ Please install the module shown below by yourself, before you install this modul
 - compel
 - diffusers
 - pyperclip
-- pyexiv2
 - torch
 - torchvision
 - discord.py
@@ -19,7 +18,7 @@ The codes in Scripts folder are the codes of GUI Apprication. Running the code, 
 - anima_gui.py  
   the code for anima model
 - sdxl_gui.py  
-  making
+  the code for sd or sdxl model
 ## Credits
 [hdae/diffusers-anima](https://github.com/hdae/diffusers-anima)  
 [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN/tree/master)  
