@@ -385,7 +385,6 @@ if __name__=="__main__":
 			seed=sd["se"],
 			out_folder=sd["out"],
 			base_safe=sd["input"],
-			j_or_p="j",
 			url="",
 			dtype=sd["dtype"],
 			dev=sd["dev"],
