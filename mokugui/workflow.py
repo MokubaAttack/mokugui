@@ -428,7 +428,6 @@ def mokuani(
 			images=images,
 			out=True,
 			out_folder=out_folder,
-			j_or_p=j_or_p,
 			url=url
 		)
 		if type(images) != list:
