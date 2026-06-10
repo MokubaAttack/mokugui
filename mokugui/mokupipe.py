@@ -425,7 +425,7 @@ class mokupipe:
 				).images[0]
 			if out:
 				self.meta_dict["se"]=str(i)
-				self.meta_dict["input"]=self.out_folder+"/"+str(j)+"_"+str(i)+".png"
+				self.meta_dict["input"]=self.out_folder+"/"+str(j)+"_"+str(i)+".jpg"
 				plus_meta(self.meta_dict,image)
 				if self.url!="":
 					to_discord(self.meta_dict["input"],self.url)
@@ -540,7 +540,7 @@ class mokupipe:
 				).images[0]
 			if out:
 				self.meta_dict["se"]=str(i)
-				self.meta_dict["input"]=self.out_folder+"/"+str(j)+"_"+str(i)+".png"
+				self.meta_dict["input"]=self.out_folder+"/"+str(j)+"_"+str(i)+".jpg"
 				plus_meta(self.meta_dict,image)
 				if self.url!="":
 					to_discord(self.meta_dict["input"],self.url)
@@ -774,7 +774,7 @@ class mokupipe:
 
 			if out:
 				self.meta_dict["se"]=str(i)
-				self.meta_dict["input"]=self.out_folder+"/"+str(j)+"_"+str(i)+".png"
+				self.meta_dict["input"]=self.out_folder+"/"+str(j)+"_"+str(i)+".jpg"
 				plus_meta(self.meta_dict,image)
 				if self.url!="":
 					to_discord(self.meta_dict["input"],self.url)
