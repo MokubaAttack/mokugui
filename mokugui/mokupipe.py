@@ -43,7 +43,6 @@ from lycoris.modules.boft import ButterflyOFTModule
 from lycoris.modules.glora import GLoRAModule
 from lycoris.modules.dylora import DyLoraModule
 from lycoris.modules.ia3 import IA3Module
-from lycoris.modules.tlora import TLoraModule
 
 MODULE_LIST = [
 	LoConModule,
@@ -56,7 +55,6 @@ MODULE_LIST = [
 	ButterflyOFTModule,
 	GLoRAModule,
 	DyLoraModule,
-	TLoraModule,
 ]
 
 from .meta import plus_meta
@@ -297,12 +295,14 @@ class mokupipe:
 						self.pipe.fuse_lora(lora_scale= lora_weights[i])
 						self.pipe.unload_lora_weights()
 					else:
-						first_key=list(sd)[0]
 						MODULE_type=None
 						for m in MODULE_LIST:
 							for k in m.weight_list_det:
-								if first_key.endswith(k):
-									MODULE_type=m
+								for k2 in sd:
+									if k2.endswith(k):
+										MODULE_type=m
+										break
+								if MODULE_type!=None:
 									break
 							if MODULE_type!=None:
 								break
@@ -340,7 +340,7 @@ class mokupipe:
 					list1,list2=getid(line+".safetensors",lora_weights[i])
 					meta_id_list=meta_id_list+list1
 					meta_weight_list=meta_weight_list+list2
-					del list1,list2
+					del list1,list2,sd
 				else:
 					memo=line+".safetensors does not exist."
 					return memo
