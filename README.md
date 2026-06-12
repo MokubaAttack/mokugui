@@ -20,7 +20,8 @@ The codes in Scripts folder are the codes of GUI Apprication. Running the code, 
 - sdxl_gui.py  
   the code for sd or sdxl model
 ## Credits
-[hdae/diffusers-anima](https://github.com/hdae/diffusers-anima)  
-[xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN/tree/master)  
-[gokayfem/Tile-Upscaler](https://github.com/gokayfem/Tile-Upscaler)  
-[lllyasviel/control_v11f1e_sd15_tile](https://huggingface.co/lllyasviel/control_v11f1e_sd15_tile)  
+- [hdae/diffusers-anima](https://github.com/hdae/diffusers-anima)  
+- [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN/tree/master)  
+- [gokayfem/Tile-Upscaler](https://github.com/gokayfem/Tile-Upscaler)  
+- [lllyasviel/control_v11f1e_sd15_tile](https://huggingface.co/lllyasviel/control_v11f1e_sd15_tile)  
+- [KohakuBlueleaf/LyCORIS](https://github.com/KohakuBlueleaf/LyCORIS)
