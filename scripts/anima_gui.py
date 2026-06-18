@@ -31,8 +31,11 @@ def setvalues():
 				iv[k]=sd[k]
 	return iv
 
-def loadvalues(win):
-	f=open(os.getcwd()+"/anima_default.json","r")
+def loadvalues(win,path=None):
+	if path==None:
+		f=open(os.getcwd()+"/anima_default.json","r")
+	else:
+		f=open(path,"r")
 	sd=json.load(f)
 	f.close()
 	iv={
@@ -58,7 +61,7 @@ def loadvalues(win):
 		else:
 			win[k].update(iv[k])
 
-def savevalues(vs):
+def savevalues(vs,path=None):
 	iv={
 		"pr":"","ne":"",
 		"n":"10",
@@ -78,7 +81,10 @@ def savevalues(vs):
 	}
 	for k in iv:
 		iv[k]=vs[k]
-	f=open(os.getcwd()+"/anima_default.json","w")
+	if path==None:
+		f=open(os.getcwd()+"/anima_default.json","w")
+	else:
+		f=open(path,"w")
 	json.dump(iv,f)
 	f.close()
 
@@ -170,7 +176,7 @@ if __name__=="__main__":
 			sg.Text("output folder"),
 			sg.Input(iv["out"],key="out",right_click_menu=grp_rclick_menu["out"]),sg.FolderBrowse()
 		],
-		[sg.Button("Save Params",key="save"),sg.Button("Load Params",key="load",disabled=d)],
+		[sg.Button("Save Params",key="save"),sg.Button("Load Params",key="load",disabled=d),sg.Button("Save Params to",key="save2"),sg.Button("Load Params from",key="load2")],
 		[sg.Button('RUN', key='RUN'),sg.Button('EXIT', key='EXIT')]
 	]
 
@@ -228,11 +234,28 @@ if __name__=="__main__":
 				loadvalues(window)
 			except:
 				pass
+		elif event=="save2":
+			try:
+				value = sg.popup_get_file('save file',file_types=(('json File', '.json'),),save_as=True)
+				if value!=None:
+					savevalues(values,value)
+			except:
+				pass
+		elif event=="load2":
+			try:
+				value = sg.popup_get_file('load file',file_types=(('json File', '.json'),))
+				if value!=None:
+					loadvalues(window,value)
+			except:
+				pass
 
 	window.close()
 
 	if sd!={}:
 		import mokugui
+		import time
+		
+		start_time=time.time()
 
 		loras=[]
 		lora_weights=[]
@@ -327,4 +350,9 @@ if __name__=="__main__":
 			step2=step2,
 			ss=ss
 			)
+		end_time=time.time()
+		time_sec=round(end_time-start_time)
+		time_min=int(time_sec/60)
+		time_sec=time_sec-60*time_min
+		result=result+"\n"+str(time_min)+"min"+str(time_sec)+"sec"
 		sg.popup(result,title='anima gui')
