@@ -1,12 +1,12 @@
 from diffusers import (
 	AutoencoderKL,
 	ControlNetModel,
-	StableDiffusionXLPAGPipeline,
-	StableDiffusionXLPAGImg2ImgPipeline,
-	StableDiffusionPAGPipeline,
-	StableDiffusionPAGImg2ImgPipeline,
-	StableDiffusionXLControlNetPAGImg2ImgPipeline,
-	StableDiffusionControlNetPAGInpaintPipeline,
+	StableDiffusionXLPipeline,
+	StableDiffusionXLImg2ImgPipeline,
+	StableDiffusionPipeline,
+	StableDiffusionImg2ImgPipeline,
+	StableDiffusionXLControlNetImg2ImgPipeline,
+	StableDiffusionControlNetImg2ImgPipeline,
 	EulerDiscreteScheduler,
 	EulerAncestralDiscreteScheduler,
 	LMSDiscreteScheduler,
@@ -69,46 +69,66 @@ sgm_use=[
 	"Euler","Euler a","DPM++ 2M","DPM++ 2M SDE","DPM++ SDE","DPM++","DPM2","DPM2 a","Heun","LMS","UniPC","DPM++ 3M SDE"
 ]
 
-unet_keys={
-	"middle_block_0":"mid_block_resnets_0",
-	"middle_block_1":"mid_block_attentions_0",
-	"middle_block_2":"mid_block_resnets_1",
+sdxl_unet_keys={
 	"in_layers_0": "norm1",
 	"in_layers_2": "conv1",
 	"out_layers_0": "norm2",
 	"out_layers_3": "conv2",
 	"emb_layers_1": "time_emb_proj",
-	"skip_connection": "conv_shortcut",
-	"output_blocks_0_0":"up_blocks_0_resnets_0",
-	"output_blocks_0_1":"up_blocks_0_attentions_0",
-	"output_blocks_1_0":"up_blocks_0_resnets_1",
-	"output_blocks_1_1":"up_blocks_0_attentions_1",
-	"output_blocks_2_0":"up_blocks_0_resnets_2",
-	"output_blocks_2_1":"up_blocks_0_attentions_2",
-	"output_blocks_2_2":"up_blocks_0_upsamplers_0",
-	"output_blocks_3_0":"up_blocks_1_resnets_0",
-	"output_blocks_3_1":"up_blocks_1_attentions_0",
-	"output_blocks_4_0":"up_blocks_1_resnets_1",
-	"output_blocks_4_1":"up_blocks_1_attentions_1",
-	"output_blocks_5_0":"up_blocks_1_resnets_2",
-	"output_blocks_5_1":"up_blocks_1_attentions_2",
-	"output_blocks_5_2":"up_blocks_1_upsamplers_0",
-	"output_blocks_6_0":"up_blocks_2_resnets_0",
-	"output_blocks_7_0":"up_blocks_2_resnets_1",
-	"output_blocks_8_0":"up_blocks_2_resnets_2",
-	"input_blocks_1_0":"down_blocks_0_resnets_0",
-	"input_blocks_2_0":"down_blocks_0_resnets_1",
-	"input_blocks_3_0_op":"down_blocks_0_downsamplers_0_conv",
-	"input_blocks_4_0":"down_blocks_1_resnets_0",
-	"input_blocks_4_1":"down_blocks_1_attentions_0",
-	"input_blocks_5_0":"down_blocks_1_resnets_1",
-	"input_blocks_5_1":"down_blocks_1_attentions_1",
-	"input_blocks_6_0_op":"down_blocks_1_downsamplers_0_conv",
-	"input_blocks_7_0":"down_blocks_2_resnets_0",
-	"input_blocks_7_1":"down_blocks_2_attentions_0",
-	"input_blocks_8_0":"down_blocks_2_resnets_1",
-	"input_blocks_8_1":"down_blocks_2_attentions_1",
 }
+for i in range(3):
+	for j in range(2):
+		sdxl_unet_keys["input_blocks_"+str(3 * i + j + 1)+"_0"]="down_blocks_"+str(i)+"_resnets_"+str(j)
+		if i > 0:
+			sdxl_unet_keys["input_blocks_"+str(3 * i + j + 1)+"_1"]="down_blocks_"+str(i)+"_attentions_"+str(j)
+
+	for j in range(4):
+		sdxl_unet_keys["output_blocks_"+str(3 * i + j)+"_0"]="up_blocks_"+str(i)+"_resnets_"+str(j)
+		if i < 2:
+			sdxl_unet_keys["output_blocks_"+str(3 * i + j)+"_1"]="up_blocks_"+str(i)+"_attentions_"+str(j)
+
+	if i < 3:
+		sdxl_unet_keys["input_blocks_"+str(3 * (i + 1))+"_0_op"]="down_blocks_"+str(i)+"_downsamplers_0_conv"
+
+		if i==0:
+			sdxl_unet_keys["output_blocks_"+str(3 * i + 2)+"_1"]="up_blocks_"+str(i)+"_upsamplers_0"
+		else:
+			sdxl_unet_keys["output_blocks_"+str(3 * i + 2)+"_2"]="up_blocks_"+str(i)+"_upsamplers_0"
+sdxl_unet_keys["output_blocks_2_1_conv"]="output_blocks_2_2_conv"
+
+sdxl_unet_keys["middle_block_1"]="mid_block_attentions_0"
+for j in range(2):
+	sdxl_unet_keys["middle_block_"+str(2 * j)]="mid_block_resnets_"+str(j)
+	
+sd_unet_keys={
+	"in_layers_0": "norm1",
+	"in_layers_2": "conv1",
+	"out_layers_0": "norm2",
+	"out_layers_3": "conv2",
+	"emb_layers_1": "time_emb_proj",
+}
+for i in range(4):
+	for j in range(2):
+		sd_unet_keys["input_blocks_"+str(3 * i + j + 1)+"_0"]="down_blocks_"+str(i)+"_resnets_"+str(j)
+		if i < 3:
+			sdxl_unet_keys["input_blocks_"+str(3 * i + j + 1)+"_1"]="down_blocks_"+str(i)+"_attentions_"+str(j)
+
+	for j in range(3):
+		sd_unet_keys["output_blocks_"+str(3 * i + j)+"_0"]="up_blocks_"+str(i)+"_resnets_"+str(j)
+		if i > 0:
+			sd_unet_keys["output_blocks_"+str(3 * i + j)+"_1"]="up_blocks_"+str(i)+"_attentions_"+str(j)
+
+	if i < 3:
+		sd_unet_keys["input_blocks_"+str(3 * (i + 1))+"_0_op"]="down_blocks_"+str(i)+"_downsamplers_0_conv"
+
+		if i==0:
+			sd_unet_keys["output_blocks_"+str(3 * i + 2)+"_1"]="up_blocks_"+str(i)+"_upsamplers_0"
+		else:
+			sd_unet_keys["output_blocks_"+str(3 * i + 2)+"_2"]="up_blocks_"+str(i)+"_upsamplers_0"
+
+sd_unet_keys["middle_block_1"]="mid_block_attentions_0"
+for j in range(2):
+	sd_unet_keys["middle_block_"+str(2 * j)]="mid_block_resnets_"+str(j)
 
 def create_gaussian_weight(w,h, sigma=0.3):
 	x = numpy.linspace(-1, 1, w)
@@ -133,6 +153,7 @@ class mokupipe:
 
 		self.dtype=torch.float16
 		self.dev="cuda"
+		self.lowmem=False
 
 	def mkpipe(
 		self,
@@ -164,14 +185,20 @@ class mokupipe:
 		self.is_sdxl="conditioner.embedders.1.model.transformer.resblocks.9.mlp.c_proj.weight" in sd
 
 		if self.is_sdxl:
-			self.pipe=StableDiffusionXLPAGPipeline.from_single_file(base_safe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
+			self.pipe=StableDiffusionXLPipeline.from_single_file(base_safe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 			if os.path.isfile(vae_safe):
 				self.pipe.vae=AutoencoderKL.from_single_file(vae_safe,torch_dtype=self.dtype)
 		else:
-			self.pipe=StableDiffusionPAGPipeline.from_single_file(base_safe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
+			self.pipe=StableDiffusionPipeline.from_single_file(base_safe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
 			if os.path.isfile(vae_safe):
 				self.pipe.vae=AutoencoderKL.from_single_file(vae_safe,torch_dtype=self.dtype)
-		self.pipe.to(self.dev)
+		if self.lowmem:
+			self.pipe.vae.tile_sample_min_size=256
+			sample_size=256
+			self.pipe.vae.tile_latent_min_size = int(sample_size / (2 ** (len(self.pipe.vae.config.block_out_channels) - 1)))
+			self.pipe.enable_model_cpu_offload()
+		else:
+			self.pipe.to(self.dev)
 
 		self.meta_dict["sa"]=""
 		sgm_dict={}
@@ -332,43 +359,74 @@ class mokupipe:
 							break
 
 					if lora_check:
-						ukeys=[]
-						for name, module in self.pipe.unet.named_modules():
-							ukeys.append(name.replace(".","_"))
-						t1keys=[]
-						for name, module in self.pipe.text_encoder.named_modules():
-							t1keys.append(name.replace(".","_"))
-						t2keys=[]
-						for name, module in self.pipe.text_encoder_2.named_modules():
-							t2keys.append(name.replace(".","_"))
-
-						msd={}
-						for k in sd:
-							if not(k.endswith(".lora_up.weight") or k.endswith(".lora_B.weight")):
-								continue
-							if k.endswith(".lora_up.weight"):
-								m=k.removesuffix(".lora_up.weight")
-							else:
-								m=k.removesuffix(".lora_B.weight")
-							if m.replace(".","_").startswith("lora_unet_"):
-								m2=m.replace(".","_").removeprefix("lora_unet_")
-								for k2 in unet_keys:
-									if k2 in m2:
-										m2=m2.replace(k2,unet_keys[k2])
-								if m2 in ukeys:
-									for k2 in [".lora_up.weight",".lora_down.weight",".lora_B.weight",".lora_A.weight",".alpha"]:
-										if m+k2 in sd:
-											msd[m+k2]=sd[m+k2]
-							elif m.replace(".","_").startswith("lora_te1_"):
-								if m.replace(".","_").removeprefix("lora_te1_") in t1keys:
-									for k2 in [".lora_up.weight",".lora_down.weight",".lora_B.weight",".lora_A.weight",".alpha"]:
-										if m+k2 in sd:
-											msd[m+k2]=sd[m+k2]
-							elif m.replace(".","_").startswith("lora_te2_"):
-								if m.replace(".","_").removeprefix("lora_te2_") in t2keys:
-									for k2 in [".lora_up.weight",".lora_down.weight",".lora_B.weight",".lora_A.weight",".alpha"]:
-										if m+k2 in sd:
-											msd[m+k2]=sd[m+k2]
+						if self.is_sdxl:
+							ukeys=[]
+							for name, module in self.pipe.unet.named_modules():
+								ukeys.append(name.replace(".","_"))
+							t1keys=[]
+							for name, module in self.pipe.text_encoder.named_modules():
+								t1keys.append(name.replace(".","_"))
+							t2keys=[]
+							for name, module in self.pipe.text_encoder_2.named_modules():
+								t2keys.append(name.replace(".","_"))
+	
+							msd={}
+							for k in sd:
+								if not(k.endswith(".lora_up.weight") or k.endswith(".lora_B.weight")):
+									continue
+								if k.endswith(".lora_up.weight"):
+									m=k.removesuffix(".lora_up.weight")
+								else:
+									m=k.removesuffix(".lora_B.weight")
+								if m.replace(".","_").startswith("lora_unet_"):
+									m2=m.replace(".","_").removeprefix("lora_unet_")
+									for k2 in sdxl_unet_keys:
+										if k2 in m2:
+											m2=m2.replace(k2,sdxl_unet_keys[k2])
+									if m2 in ukeys:
+										for k2 in [".lora_up.weight",".lora_down.weight",".lora_B.weight",".lora_A.weight",".alpha"]:
+											if m+k2 in sd:
+												msd[m+k2]=sd[m+k2]
+								elif m.replace(".","_").startswith("lora_te1_"):
+									if m.replace(".","_").removeprefix("lora_te1_") in t1keys:
+										for k2 in [".lora_up.weight",".lora_down.weight",".lora_B.weight",".lora_A.weight",".alpha"]:
+											if m+k2 in sd:
+												msd[m+k2]=sd[m+k2]
+								elif m.replace(".","_").startswith("lora_te2_"):
+									if m.replace(".","_").removeprefix("lora_te2_") in t2keys:
+										for k2 in [".lora_up.weight",".lora_down.weight",".lora_B.weight",".lora_A.weight",".alpha"]:
+											if m+k2 in sd:
+												msd[m+k2]=sd[m+k2]
+						else:
+							ukeys=[]
+							for name, module in self.pipe.unet.named_modules():
+								ukeys.append(name.replace(".","_"))
+							t1keys=[]
+							for name, module in self.pipe.text_encoder.named_modules():
+								t1keys.append(name.replace(".","_"))
+								
+							msd={}
+							for k in sd:
+								if not(k.endswith(".lora_up.weight") or k.endswith(".lora_B.weight")):
+									continue
+								if k.endswith(".lora_up.weight"):
+									m=k.removesuffix(".lora_up.weight")
+								else:
+									m=k.removesuffix(".lora_B.weight")
+								if m.replace(".","_").startswith("lora_unet_"):
+									m2=m.replace(".","_").removeprefix("lora_unet_")
+									for k2 in sd_unet_keys:
+										if k2 in m2:
+											m2=m2.replace(k2,sd_unet_keys[k2])
+									if m2 in ukeys:
+										for k2 in [".lora_up.weight",".lora_down.weight",".lora_B.weight",".lora_A.weight",".alpha"]:
+											if m+k2 in sd:
+												msd[m+k2]=sd[m+k2]
+								elif m.replace(".","_").startswith("lora_te_"):
+									if m.replace(".","_").removeprefix("lora_te_") in t1keys:
+										for k2 in [".lora_up.weight",".lora_down.weight",".lora_B.weight",".lora_A.weight",".alpha"]:
+											if m+k2 in sd:
+												msd[m+k2]=sd[m+k2]
 
 						if msd=={}:
 							raise ValueError('These weights are not supported.')
@@ -376,7 +434,10 @@ class mokupipe:
 						self.pipe.load_lora_weights(pretrained_model_name_or_path_or_dict=msd,torch_dtype=self.dtype)
 						self.pipe.fuse_lora(lora_scale= lora_weights[i])
 						self.pipe.unload_lora_weights()
-						del msd,ukeys,t1keys,t2keys
+						if self.is_sdxl:
+							del msd,ukeys,t1keys,t2keys
+						else:
+							del msd,ukeys,t1keys
 					else:
 						MODULE_type=None
 						for m in MODULE_LIST:
@@ -506,7 +567,7 @@ class mokupipe:
 		self.out_folder=out_folder
 		self.url=url
 
-	def set_diffparams(self,dtype="f16",dev="cuda"):
+	def set_diffparams(self,dtype="f16",dev="cuda",lowmem=False):
 		if dtype=="f32":
 			self.dtype=torch.float32
 		elif dtype=="bf16":
@@ -514,16 +575,24 @@ class mokupipe:
 		else:
 			self.dtype=torch.float16
 		self.dev=dev
+		self.lowmem=lowmem
 
-	def text2image(self,prompt,n_prompt,gs,step,cs,seed,pag,x,y,out):
+	def text2image(self,prompt,n_prompt,gs,step,cs,seed,x,y,out):
 		if self.pipe==None:
 			memo="You must make a pipeline."
 			return memo
 		if self.is_sdxl:
-			self.pipe=StableDiffusionXLPAGPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
+			self.pipe=StableDiffusionXLPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)#,cache_dir=os.getcwd()+"/pipecache")
 		else:
-			self.pipe=StableDiffusionPAGPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
-		self.pipe.to(self.dev)
+			self.pipe=StableDiffusionPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)#,cache_dir=os.getcwd()+"/pipecache")
+		if self.lowmem:
+			self.pipe.vae.tile_sample_min_size=256
+			sample_size=256
+			self.pipe.vae.tile_latent_min_size = int(sample_size / (2 ** (len(self.pipe.vae.config.block_out_channels) - 1)))
+			self.pipe.enable_model_cpu_offload()
+		else:
+			self.pipe.to(self.dev)
+		
 		prompt=prompt+self.prompt_a
 		n_prompt=n_prompt+self.n_prompt_a
 		self.meta_dict["pr"]=prompt
@@ -531,7 +600,6 @@ class mokupipe:
 		self.meta_dict["st"]=str(step)
 		self.meta_dict["cf"]=str(gs)
 		self.meta_dict["cl"]=str(cs)
-		self.meta_dict["pag"]=str(pag)
 		for k in ["hs","ds","hu","hum","up","ccs","cont","tu","tum"]:
 			if k in self.meta_dict:
 				del self.meta_dict[k]
@@ -565,7 +633,6 @@ class mokupipe:
 					num_inference_steps=step,
 					clip_skip=cs,
 					generator=torch.manual_seed(i),
-					pag_scale=pag
 				).images[0]
 			else:
 				image = self.pipe(
@@ -578,7 +645,6 @@ class mokupipe:
 					num_inference_steps=step,
 					clip_skip=cs,
 					generator=torch.manual_seed(i),
-					pag_scale=pag
 				).images[0]
 			if out:
 				self.meta_dict["se"]=str(i)
@@ -592,22 +658,27 @@ class mokupipe:
 
 		return images
 
-	def image2imageup(self,prompt,n_prompt,gs,step,cs,seed,pag,x,y,ss,images,out):
+	def image2imageup(self,prompt,n_prompt,gs,step,cs,seed,x,y,ss,images,out):
 		if self.pipe==None:
 			memo="You must make a pipeline."
 			return memo
 		if self.is_sdxl:
-			self.pipe=StableDiffusionXLPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
+			self.pipe=StableDiffusionXLImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)#,cache_dir=os.getcwd()+"/pipecache")
 		else:
-			self.pipe=StableDiffusionPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
-		self.pipe.to(self.dev)
+			self.pipe=StableDiffusionImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)#,cache_dir=os.getcwd()+"/pipecache")
+		if self.lowmem:
+			self.pipe.vae.tile_sample_min_size=256
+			sample_size=256
+			self.pipe.vae.tile_latent_min_size = int(sample_size / (2 ** (len(self.pipe.vae.config.block_out_channels) - 1)))
+			self.pipe.enable_model_cpu_offload()
+		else:
+			self.pipe.to(self.dev)
 		prompt=prompt+self.prompt_a
 		n_prompt=n_prompt+self.n_prompt_a
 		self.meta_dict["pr"]=prompt
 		self.meta_dict["ne"]=n_prompt
 		self.meta_dict["cf"]=str(gs)
 		self.meta_dict["cl"]=str(cs)
-		self.meta_dict["pag"]=str(pag)
 		for k in ["hs","ds","hu","hum","up","ccs","cont","tu","tum"]:
 			if k in self.meta_dict:
 				del self.meta_dict[k]
@@ -655,6 +726,7 @@ class mokupipe:
 						u_list.append(1)
 						checklist.append(False)
 
+		del self.upscaler.model
 		j=0
 		for i in seed:
 			j=j+1
@@ -680,7 +752,6 @@ class mokupipe:
 					clip_skip=cs,
 					generator=torch.manual_seed(i),
 					strength=ss,
-					pag_scale=pag
 				).images[0]
 			else:
 				image = self.pipe(
@@ -693,7 +764,6 @@ class mokupipe:
 					clip_skip=cs,
 					generator=torch.manual_seed(i),
 					strength=ss,
-					pag_scale=pag
 				).images[0]
 			if out:
 				self.meta_dict["se"]=str(i)
@@ -707,7 +777,7 @@ class mokupipe:
 
 		return images
 
-	def tileup(self,prompt,n_prompt,gs,step,cs,seed,pag,x,y,ss,images,ccs=None,tile_size=(0,0),ol=0,out=True):
+	def tileup(self,prompt,n_prompt,gs,step,cs,seed,x,y,ss,images,ccs=None,tile_size=(0,0),ol=0,out=True):
 		if self.pipe==None:
 			memo="You must make a pipeline."
 			return memo
@@ -731,23 +801,29 @@ class mokupipe:
 
 		if ccs==None:
 			if self.is_sdxl:
-				self.pipe=StableDiffusionXLPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
+				self.pipe=StableDiffusionXLImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)#,cache_dir=os.getcwd()+"/pipecache")
 			else:
-				self.pipe=StableDiffusionPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
+				self.pipe=StableDiffusionImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype)#,cache_dir=os.getcwd()+"/pipecache")
 			for k in ["cont","ccs"]:
 				if k in self.meta_dict:
 					del self.meta_dict[k]
 		else:
 			if self.is_sdxl:
 				controlnet = ControlNetModel.from_pretrained("OzzyGT/SDXL_Controlnet_Tile_Realistic",torch_dtype=self.dtype,variant="fp16",cache_dir=os.getcwd()+"/pipecache")
-				self.pipe=StableDiffusionXLControlNetPAGImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,controlnet=controlnet,cache_dir=os.getcwd()+"/pipecache")
+				self.pipe=StableDiffusionXLControlNetImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,controlnet=controlnet)#,cache_dir=os.getcwd()+"/pipecache")
 				self.meta_dict["cont"]=str(370104)
 			else:
 				controlnet = ControlNetModel.from_pretrained('lllyasviel/control_v11f1e_sd15_tile',torch_dtype=self.dtype,cache_dir=os.getcwd()+"/pipecache")
-				self.pipe=StableDiffusionControlNetPAGInpaintPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,controlnet=controlnet,cache_dir=os.getcwd()+"/pipecache")
+				self.pipe=StableDiffusionControlNetImg2ImgPipeline.from_pipe(self.pipe,torch_dtype=self.dtype,controlnet=controlnet)#,cache_dir=os.getcwd()+"/pipecache")
 				self.meta_dict["cont"]=str(67566)
 			self.meta_dict["ccs"]=str(ccs)
-		self.pipe.to(self.dev)
+		if self.lowmem:
+			self.pipe.vae.tile_sample_min_size=256
+			sample_size=256
+			self.pipe.vae.tile_latent_min_size = int(sample_size / (2 ** (len(self.pipe.vae.config.block_out_channels) - 1)))
+			self.pipe.enable_model_cpu_offload()
+		else:
+			self.pipe.to(self.dev)
 		prompt=prompt+self.prompt_a
 		n_prompt=n_prompt+self.n_prompt_a
 		self.meta_dict["pr"]=prompt
@@ -756,7 +832,6 @@ class mokupipe:
 		self.meta_dict["st"]=str(step)
 		self.meta_dict["cf"]=str(gs)
 		self.meta_dict["cl"]=str(cs)
-		self.meta_dict["pag"]=str(pag)
 		for k in ["hs","ds","hu","hum","up","tu","tum"]:
 			if k in self.meta_dict:
 				del self.meta_dict[k]
@@ -806,6 +881,7 @@ class mokupipe:
 					else:
 						u_list.append(1)
 
+		del self.upscaler.model
 		j=0
 		for i in seed:
 			j=j+1
@@ -862,7 +938,6 @@ class mokupipe:
 								num_inference_steps=int(step/ss)+1,
 								clip_skip=cs,
 								strength=ss,
-								pag_scale=pag
 							).images[0]
 						else:
 							result_tile = self.pipe(
@@ -875,7 +950,6 @@ class mokupipe:
 								num_inference_steps=int(step/ss)+1,
 								clip_skip=cs,
 								strength=ss,
-								pag_scale=pag
 							).images[0]
 					else:
 						if self.is_sdxl:
@@ -893,7 +967,6 @@ class mokupipe:
 								clip_skip=cs,
 								strength=ss,
 								controlnet_conditioning_scale=ccs,
-								pag_scale=pag
 							).images[0]
 						else:
 							result_tile = self.pipe(
@@ -908,8 +981,6 @@ class mokupipe:
 								clip_skip=cs,
 								strength=ss,
 								controlnet_conditioning_scale=ccs,
-								pag_scale=pag,
-								mask_image=Image.new("RGB", current_tile_size, (255,255,255))
 							).images[0]
 
 					if current_tile_size!=(result_tile.width,result_tile.height):

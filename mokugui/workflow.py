@@ -29,10 +29,10 @@ def mokucola(
 	neg_emb=[],
 	base_safe="base.safetensors",
 	vae_safe="",
-	pag=3.0,
 	url="",
 	dtype="f16",
-	dev="cuda"
+	dev="cuda",
+	lowmem=False
 	):
 	if isinstance(seed, list):
 		pic_number=len(seed)
@@ -100,7 +100,8 @@ def mokucola(
 	pipe=mokupipe()
 	pipe.set_diffparams(
 		dtype=dtype,
-		dev=dev
+		dev=dev,
+		lowmem=lowmem
 	)
 	check=pipe.mkpipe(
 		pos_emb=pos_emb,
@@ -129,7 +130,6 @@ def mokucola(
 			step=f_step,
 			cs=cs,
 			seed=seed,
-			pag=pag,
 			x=yoko[1],
 			y=tate[1],
 			out=True
@@ -142,7 +142,6 @@ def mokucola(
 			step=f_step,
 			cs=cs,
 			seed=seed,
-			pag=pag,
 			x=yoko[0],
 			y=tate[0],
 			out=False
@@ -161,7 +160,6 @@ def mokucola(
 			step=step,
 			cs=cs,
 			seed=seed,
-			pag=pag,
 			x=yoko[1],
 			y=tate[1],
 			ss=ss,
@@ -176,7 +174,6 @@ def mokucola(
 			step=(step+f_step)/2,
 			cs=cs,
 			seed=seed,
-			pag=pag,
 			x=round((yoko[0]+yoko[1])/2/8)*8,
 			y=round((tate[0]+tate[1])/2/8)*8,
 			ss=ss,
@@ -187,6 +184,7 @@ def mokucola(
 		return images
 	
 	if prog_ver==2:
+		pipe.mkpipe_upscale(Interpolation,dev)
 		images=pipe.image2imageup(
 			prompt=prompt,
 			n_prompt=n_prompt,
@@ -194,7 +192,6 @@ def mokucola(
 			step=step,
 			cs=cs,
 			seed=seed,
-			pag=pag,
 			x=yoko[1],
 			y=tate[1],
 			ss=ss,
@@ -226,7 +223,6 @@ def mokuup(
 	seed=[],
 	pos_emb=[],
 	neg_emb=[],
-	pag=3.0,
 	url="",
 	out_folder="output",
 	prompt="masterpiece,best quality,ultra detailed",
@@ -235,7 +231,8 @@ def mokuup(
 	tile_size=(0,0),
 	ol=0,
 	dtype="f16",
-	dev="cuda"
+	dev="cuda",
+	lowmem=False
 	):
 	if isinstance(seed, list):
 		pic_number=len(seed)
@@ -283,7 +280,8 @@ def mokuup(
 	pipe=mokupipe()
 	pipe.set_diffparams(
 		dtype=dtype,
-		dev=dev
+		dev=dev,
+		lowmem=lowmem
 	)
 	check=pipe.mkpipe(
 		pos_emb=pos_emb,
@@ -312,7 +310,6 @@ def mokuup(
 		step=step,
 		cs=cs,
 		seed=seed,
-		pag=pag,
 		x=output_size[0],
 		y=output_size[1],
 		ss=ss,
@@ -435,5 +432,186 @@ def mokuani(
 
 	if url!="":
 		to_discord(out_folder,url)
+	del images,seed,pipe
+	return "fin"
+
+def mokusp(
+	loras=[],
+	lora_weights=[],
+	prompt = "",
+	n_prompt = "",
+	prompt2="masterpiece,best quality,ultra detailed",
+	n_prompt2="worst quality,low quality,normal quality",
+	t="v",
+	pic_number=10,
+	gs=7,
+	step=30,
+	step2=None,
+	step3=None,
+	ss=0.6,
+	cs=1,
+	Interpolation=3,
+	sample="DDIM",
+	sgm="",
+	seed=0,
+	out_folder="data",
+	pos_emb=[],
+	neg_emb=[],
+	base_safe="base.safetensors",
+	vae_safe="",
+	url="",
+	dtype="f16",
+	dev="cuda",
+	ccs=None,
+	tile_size=(0,0),
+	ol=0,
+	up=2,
+	lowmem=False
+	):
+	if isinstance(seed, list):
+		pic_number=len(seed)
+		for i in range(pic_number):
+			try:
+				if int(seed[i])==0:
+					seed[i]=random.randint(1, 2**31-1)
+				else:
+					seed[i]=int(seed[i])
+			except:
+				seed[i]=random.randint(1, 2**31-1)
+	else:
+		try:
+			if int(seed)==0:
+				seed=[]
+				for i in range(pic_number):
+					seed.append(random.randint(1, 2**31-1))
+			else:
+				seed=[int(seed)]
+				pic_number=1
+		except:
+			seed=[]
+			for i in range(pic_number):
+				seed.append(random.randint(1, 2**31-1))
+		
+	if t=="v":
+		tate=[1024,1600]
+		yoko=[768,1200]
+	elif t=="s":
+		tate=[888,1384]
+		yoko=[888,1384]
+	elif t=="h":
+		yoko=[1024,1600]
+		tate=[768,1200]
+	elif t=="vl":
+		tate=[800,1600]
+		yoko=[600,1200]
+	elif t=="sl":
+		tate=[696,1384]
+		yoko=[696,1384]
+	elif t=="hl":
+		yoko=[800,1600]
+		tate=[600,1200]
+	else:
+		t_list=t.split(",")
+		if len(t_list)==4:
+			iw=round(float(t_list[0])/8)*8
+			ow=round(float(t_list[1])/8)*8
+			ih=round(float(t_list[2])/8)*8
+			oh=round(float(t_list[3])/8)*8
+
+			yoko=[iw,ow]
+			tate=[ih,oh]
+			del iw,ow,ih,oh
+		else:
+			memo="t setting is error.\ninitial width, output width, initial height, output height"
+			return memo
+		del t_list
+	del t
+
+	pipe=mokupipe()
+	pipe.set_diffparams(
+		dtype=dtype,
+		dev=dev,
+		lowmem=lowmem
+	)
+	check=pipe.mkpipe(
+		pos_emb=pos_emb,
+		neg_emb=neg_emb,
+		base_safe=base_safe,
+		vae_safe=vae_safe,
+		loras=loras,
+		lora_weights=lora_weights,
+		sample=sample,
+		sgm=sgm
+	)
+
+	if check!=1:
+		return check
+
+	pipe.set_outparams(
+		out_folder=out_folder+"/0",
+		url=url
+		)
+
+	images=pipe.text2image(
+		prompt=prompt,
+		n_prompt=n_prompt,
+		gs=gs,
+		step=step,
+		cs=cs,
+		seed=seed,
+		x=yoko[0],
+		y=tate[0],
+		out=False
+	)
+
+	pipe.mkpipe_upscale(Interpolation,dev)
+
+	if step2==None:
+		step2=round(step/2)
+	images=pipe.image2imageup(
+		prompt=prompt,
+		n_prompt=n_prompt,
+		gs=gs,
+		step=step2,
+		cs=cs,
+		seed=seed,
+		x=yoko[1],
+		y=tate[1],
+		ss=ss,
+		images=images,
+		out=True
+	)
+
+	if url!="":
+		to_discord(out_folder+"/0",url)
+	
+	pipe.set_outparams(
+		out_folder=out_folder+"/1",
+		url=url
+		)
+	
+	pipe.mkpipe_upscale(Interpolation,dev)
+
+	if step3==None:
+		step3=round(step*2/3)
+	images=pipe.tileup(
+		prompt=prompt2,
+		n_prompt=n_prompt2,
+		gs=gs,
+		step=step3,
+		cs=cs,
+		seed=seed,
+		x=yoko[1]*up,
+		y=tate[1]*up,
+		ss=ss,
+		images=images,
+		ccs=ccs,
+		tile_size=tile_size,
+		ol=ol,
+		out=True
+		)
+
+	if url!="":
+		to_discord(out_folder+"/1",url)
 	del images,seed,pipe
 	return "fin"
