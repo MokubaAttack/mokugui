@@ -32,6 +32,11 @@ from compel import (
 	CompelForSD,
 	CompelForSDXL
 )
+from optimum.quanto import (
+	freeze,
+	qfloat8,
+	quantize
+)
 from lycoris import create_lycoris_from_weights
 from lycoris.modules.locon import LoConModule
 from lycoris.modules.loha import LohaModule
@@ -543,6 +548,10 @@ class mokupipe:
 		del meta_embed_list
 		self.meta_dict["pos"]=pos_emb
 		self.meta_dict["neg"]=neg_emb
+
+		if self.lowmem:
+			quantize(self.pipe.unet, weights=qfloat8)
+			freeze(self.pipe.unet)
 		
 		return 1
 

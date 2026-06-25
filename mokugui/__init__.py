@@ -2,7 +2,8 @@ try:
 	from .workflow import (
 		mokucola,
 		mokuup,
-		mokuani
+		mokuani,
+		mokusp
 	)
 
 	path=__file__
@@ -10,7 +11,8 @@ try:
 	f.write("from .workflow import (\n")
 	f.write("	mokucola,\n")
 	f.write("	mokuup,\n")
-	f.write("	mokuani\n")
+	f.write("	mokuani,\n")
+	f.write("	mokusp\n")
 	f.write(")\n")
 	f.close()
 
@@ -50,7 +52,8 @@ except:
 	from .workflow import (
 		mokucola,
 		mokuup,
-		mokuani
+		mokuani,
+		mokusp
 	)
 
 	path=__file__
@@ -58,6 +61,7 @@ except:
 	f.write("from .workflow import (\n")
 	f.write("	mokucola,\n")
 	f.write("	mokuup,\n")
-	f.write("	mokuani\n")
+	f.write("	mokuani,\n")
+	f.write("	mokusp\n")
 	f.write(")\n")
 	f.close()
