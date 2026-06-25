@@ -19,7 +19,7 @@ The codes in Scripts folder are the codes of GUI Apprication. Running the code, 
 - anima_gui.py  
   the code for anima model
 - sdxl_gui.py  
-  the code for sd or sdxl model
+  the code for sd or sdxl model  
   If you check low memory, in gpu having 10GB vram you can run this program.
 ## Credits
 - [hdae/diffusers-anima](https://github.com/hdae/diffusers-anima)  
