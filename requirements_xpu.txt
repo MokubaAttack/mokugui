@@ -7,3 +7,4 @@ torch @ https://download-r2.pytorch.org/whl/xpu/torch-2.10.0%2Bxpu-cp312-cp312-w
 torchvision @ https://download-r2.pytorch.org/whl/xpu/torchvision-0.25.0%2Bxpu-cp312-cp312-win_amd64.whl
 piexif
 transformers==5.5.4
+optimum-quanto
