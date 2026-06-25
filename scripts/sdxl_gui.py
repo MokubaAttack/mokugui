@@ -8,7 +8,7 @@ def setvalues():
 	iv={
 		"pr":"","ne":"",
 		"n":"10",
-		"st":"32",
+		"st":"30",
 		"sa":"DDIM",
 		"sc":"",
 		"cf":"4",
@@ -22,7 +22,7 @@ def setvalues():
 		"input":"","out":"",
 		"dtype":"bf16","dev":"xpu",
 		"vae":"","p1":"","p2":"","p3":"","n1":"","n2":"","n3":"",
-		"cl":"2","pag":"3.0","mode":"hires.fix"
+		"cl":"2","tu":"1.33","ts":"20","ccs":"1.0","lowmem":True
 	}
 	if os.path.exists(os.getcwd()+"/sdxl_default.json"):
 		f=open(os.getcwd()+"/sdxl_default.json","r")
@@ -33,14 +33,17 @@ def setvalues():
 				iv[k]=sd[k]
 	return iv
 
-def loadvalues(win):
-	f=open(os.getcwd()+"/sdxl_default.json","r")
+def loadvalues(win,path=None):
+	if path==None:
+		f=open(os.getcwd()+"/sdxl_default.json","r")
+	else:
+		f=open(path,"r")
 	sd=json.load(f)
 	f.close()
 	iv={
 		"pr":"","ne":"",
 		"n":"10",
-		"st":"32",
+		"st":"30",
 		"sa":"DDIM",
 		"sc":"",
 		"cf":"4",
@@ -54,19 +57,17 @@ def loadvalues(win):
 		"input":"","out":"",
 		"dtype":"bf16","dev":"xpu",
 		"vae":"","p1":"","p2":"","p3":"","n1":"","n2":"","n3":"",
-		"cl":"2","pag":"3.0","mode":"hires.fix"
+		"cl":"2","tu":"1.33","ts":"20","ccs":"1.0","lowmem":True
 	}
 	for k in iv:
 		if k in sd:
 			win[k].update(sd[k])
-		else:
-			win[k].update(iv[k])
 
-def savevalues(vs):
+def savevalues(vs,path=None):
 	iv={
 		"pr":"","ne":"",
 		"n":"10",
-		"st":"32",
+		"st":"30",
 		"sa":"DDIM",
 		"sc":"",
 		"cf":"4",
@@ -80,11 +81,14 @@ def savevalues(vs):
 		"input":"","out":"",
 		"dtype":"bf16","dev":"xpu",
 		"vae":"","p1":"","p2":"","p3":"","n1":"","n2":"","n3":"",
-		"cl":"2","pag":"3.0","mode":"hires.fix"
+		"cl":"2","tu":"1.33","ts":"20","ccs":"1.0","lowmem":True
 	}
 	for k in iv:
 		iv[k]=vs[k]
-	f=open(os.getcwd()+"/sdxl_default.json","w")
+	if path==None:
+		f=open(os.getcwd()+"/sdxl_default.json","w")
+	else:
+		f=open(path,"w")
 	json.dump(iv,f)
 	f.close()
 
@@ -97,29 +101,28 @@ if __name__=="__main__":
 	
 	keys=[
 		"input","pr","ne","st","cf","se","n","x","y","lora1","lora2","lora3","lora4","w1","w2","w3","w4","hu","hs","hum","ds","sa","sc","out",
-		"vae","p1","p2","p3","n1","n2","n3","cl","pag","mode"
+		"vae","p1","p2","p3","n1","n2","n3","cl","tu","ts","ccs"
 	]
 
 	sa_list=[
 		"Euler a",
-        "Euler",
-        "LMS",
-        "Heun",
-        "DPM2",
-        "DPM2 a",
-        "DPM++"
-        "DPM++ 2M",
-        "DPM++ SDE",
-        "DPM++ 2M SDE",
-        "DPM++ 3M SDE",
-        "DDIM",
-        "PLMS",
-        "UniPC",
-        "LCM"
+		"Euler",
+		"LMS",
+		"Heun",
+		"DPM2",
+		"DPM2 a",
+		"DPM++",
+		"DPM++ 2M",
+		"DPM++ SDE",
+		"DPM++ 2M SDE",
+		"DPM++ 3M SDE",
+		"DDIM",
+		"PLMS",
+		"UniPC",
+		"LCM"
 	]
 	sc_list=["","Karras","beta","exponential","sgm_uniform","simple"]
 	hum_list=["NEAREST","BOX","BILINEAR","HAMMING","BICUBIC","LANCZOS","select file"]
-	mode_list=["normal","hires.fix","mokuba.fix"]
 
 	grp_rclick_menu={}
 	for key in keys:
@@ -146,16 +149,17 @@ if __name__=="__main__":
 		[sg.Text("CFG scale"), sg.Input(iv["cf"],key="cf",right_click_menu=grp_rclick_menu["cf"], size=(10, 1))],
 		[sg.Text("Seed"), sg.Input(iv["se"],key="se",right_click_menu=grp_rclick_menu["se"], size=(20, 1))],
 		[sg.Text("Clip skip"), sg.Input(iv["cl"],key="cl",right_click_menu=grp_rclick_menu["cl"], size=(10, 1))],
-        [sg.Text("PAG scale"), sg.Input(iv["pag"],key="pag",right_click_menu=grp_rclick_menu["pag"], size=(10, 1))],
 	]
 	col4=[
-		[sg.Text("mode"), sg.Combo(default_value=iv["mode"],key="mode",values=mode_list)],
 		[sg.Text("width"), sg.Input(iv["x"],key="x",right_click_menu=grp_rclick_menu["x"], size=(10, 1))],
 		[sg.Text("height"), sg.Input(iv["y"],key="y",right_click_menu=grp_rclick_menu["y"], size=(10, 1))],
 		[sg.Text("Denoising strength"), sg.Input(iv["ds"],key="ds",right_click_menu=grp_rclick_menu["ds"], size=(10, 1))],
 		[sg.Text("Hires upscale"), sg.Input(iv["hu"],key="hu",right_click_menu=grp_rclick_menu["hu"], size=(10, 1))],
 		[sg.Text("Hires steps"), sg.Input(iv["hs"],key="hs",right_click_menu=grp_rclick_menu["hs"], size=(10, 1))],
-		[sg.Text("Hires upscaler"), sg.Combo(default_value=iv["hum"],key="hum",values=hum_list,enable_events=True)],
+		[sg.Text("Tile upscale"), sg.Input(iv["tu"],key="tu",right_click_menu=grp_rclick_menu["tu"], size=(10, 1))],
+		[sg.Text("Tile steps"), sg.Input(iv["ts"],key="ts",right_click_menu=grp_rclick_menu["ts"], size=(10, 1))],
+		[sg.Text("Upscaler"), sg.Combo(default_value=iv["hum"],key="hum",values=hum_list,enable_events=True)],
+		[sg.Text("Tile steps"), sg.Input(iv["ccs"],key="ccs",right_click_menu=grp_rclick_menu["ccs"], size=(10, 1))],
 	]
 	col5=[
 		[sg.Text("positive embedding")],
@@ -172,6 +176,8 @@ if __name__=="__main__":
 	col7=[
 		[sg.Button("Save Params",key="save")],
 		[sg.Button("Load Params",key="load",disabled=d)],
+		[sg.Button("Save Params to",key="save2")],
+		[sg.Button("Load Params from",key="load2")],
 		[sg.Button('RUN', key='RUN')],
 		[sg.Button('EXIT', key='EXIT')]
 	]
@@ -180,8 +186,6 @@ if __name__=="__main__":
 		[
 			sg.Text("ckpt"),
 			sg.Input(iv["input"],key="input",right_click_menu=grp_rclick_menu["input"]),sg.FilesBrowse(file_types=(('ckpt file', '.safetensors'),)),
-			sg.Text("vae"),
-			sg.Input(iv["vae"],key="vae",right_click_menu=grp_rclick_menu["vae"]),sg.FilesBrowse(file_types=(('vae file', '.safetensors'),))
 		],
 		[
 			sg.Text("lora1"),
@@ -207,12 +211,17 @@ if __name__=="__main__":
 			sg.Text("weight"),
 			sg.Input(iv["w4"],key="w4",right_click_menu=grp_rclick_menu["w4"], size=(10, 1))
 		],
+		[
+			sg.Text("vae"),
+			sg.Input(iv["vae"],key="vae",right_click_menu=grp_rclick_menu["vae"]),sg.FilesBrowse(file_types=(('vae file', '.safetensors'),)),
+		],
 		[sg.Column(col5),sg.Column(col6)],
 		[sg.Column(col1),sg.Column(col2)],
 		[sg.Column(col3),sg.Column(col4),sg.Column(col7)],
 		[
 			sg.Text("dtype"), sg.Combo(default_value=iv["dtype"],values=["f32","f16","bf16"],key="dtype"),
-			sg.Text("device"), sg.Combo(default_value=iv["dev"],values=["cpu","cuda","mps","xpu"],key="dev")
+			sg.Text("device"), sg.Combo(default_value=iv["dev"],values=["cpu","cuda","mps","xpu"],key="dev"),
+			sg.Checkbox('low memory', key='lowmem',default=iv["lowmem"])
 		],
 		[
 			sg.Text("output folder"),
@@ -274,11 +283,28 @@ if __name__=="__main__":
 				loadvalues(window)
 			except:
 				pass
+		elif event=="save2":
+			try:
+				value = sg.popup_get_file('save file',file_types=(('json File', '.json'),),save_as=True)
+				if value!=None:
+					savevalues(values,value)
+			except:
+				pass
+		elif event=="load2":
+			try:
+				value = sg.popup_get_file('load file',file_types=(('json File', '.json'),))
+				if value!=None:
+					loadvalues(window,value)
+			except:
+				pass
 
 	window.close()
 
 	if sd!={}:
 		import mokugui
+		import time
+		
+		start_time=time.time()
 
 		loras=[]
 		lora_weights=[]
@@ -312,6 +338,14 @@ if __name__=="__main__":
 			step=int(sd["st"])
 		except:
 			step=30
+		try:
+			step2=int(sd["hs"])
+		except:
+			step2=15
+		try:
+			step3=int(sd["ts"])
+		except:
+			step3=20
 
 		try:
 			x=int(sd["x"])
@@ -323,63 +357,52 @@ if __name__=="__main__":
 			y=1024
 
 		try:
-			pag=float(sd["pag"])
+			ccs=float(sd["ccs"])
 		except:
-			pag=3.0
+			ccs=1.0
 
 		try:
 			cs=int(sd["cl"])
 		except:
 			cs=2
 
-		if sd["mode"]=="normal":
-			mode=0
+		try:
+			ss=float(sd["ds"])
+		except:
 			ss=0.4
-			Interpolation=3
-			step2=16
+			
+		try:
+			up=float(sd["hu"])
+		except:
 			up=1.5
-			t=str(x)+","+str(x)+","+str(y)+","+str(y)
+		try:
+			up2=float(sd["tu"])
+		except:
+			up2=1.33
+		t=str(x)+","+str(x*up)+","+str(y)+","+str(y*up)
+
+		if sd["hum"]=="NEAREST":
+			Interpolation=1
+		elif sd["hum"]=="BOX":
+			Interpolation=2
+		elif sd["hum"]=="BILINEAR":
+			Interpolation=3
+		elif sd["hum"]=="HAMMING":
+			Interpolation=4
+		elif sd["hum"]=="BICUBIC":
+			Interpolation=5
+		elif sd["hum"]=="LANCZOS":
+			Interpolation=6
 		else:
-			if sd["mode"]=="hires.fix":
-				mode=1
-			else:
-				mode=2
-			try:
-				ss=float(sd["ds"])
-			except:
-				ss=0.4
-			try:
-				up=float(sd["hu"])
-			except:
-				up=1.5
-			t=str(x)+","+str(x*up)+","+str(y)+","+str(y*up)
-			try:
-				step2=int(sd["hs"])
-			except:
-				step2=25
-			if sd["hum"]=="NEAREST":
-				Interpolation=1
-			elif sd["hum"]=="BOX":
-				Interpolation=2
-			elif sd["hum"]=="BILINEAR":
-				Interpolation=3
-			elif sd["hum"]=="HAMMING":
-				Interpolation=4
-			elif sd["hum"]=="BICUBIC":
-				Interpolation=5
-			elif sd["hum"]=="LANCZOS":
-				Interpolation=6
-			else:
-				Interpolation=sd["hum"]
+			Interpolation=sd["hum"]
 		
-		result=mokugui.mokucola(
+		result=mokugui.mokusp(
 			loras=loras,
 			lora_weights=lora_weights,
 			prompt = sd["pr"],
 			n_prompt = sd["ne"],
 			pic_number=n,
 			gs=gs,
-			f_step=step,
 			sample=sd["sa"],
 			sgm=sd["sc"],
 			seed=sd["se"],
@@ -389,14 +412,22 @@ if __name__=="__main__":
 			dtype=sd["dtype"],
 			dev=sd["dev"],
 			Interpolation=Interpolation,
-			step=step2,
+			step=step,
+			step2=step2,
+			step3=step3,
 			ss=ss,
 			cs=cs,
 			t=t,
 			vae_safe=sd["vae"],
-			pag=pag,
 			pos_emb=pos_emb,
 			neg_emb=neg_emb,
-			prog_ver=mode
+			ccs=ccs,
+			up=up2,
+			lowmem=sd["lowmem"]
 			)
+		end_time=time.time()
+		time_sec=round(end_time-start_time)
+		time_min=int(time_sec/60)
+		time_sec=time_sec-60*time_min
+		result=result+"\n"+str(time_min)+"min"+str(time_sec)+"sec"
 		sg.popup(result,title='sdxl gui')
