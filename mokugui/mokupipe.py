@@ -434,7 +434,8 @@ class mokupipe:
 												msd[m+k2]=sd[m+k2]
 
 						if msd=={}:
-							raise ValueError('These weights are not supported.')
+							memo=os.path.basename(line+".safetensors")+' is not supported.'
+							return memo
 							
 						self.pipe.load_lora_weights(pretrained_model_name_or_path_or_dict=msd,torch_dtype=self.dtype)
 						self.pipe.fuse_lora(lora_scale= lora_weights[i])
@@ -456,7 +457,8 @@ class mokupipe:
 							if MODULE_type!=None:
 								break
 						if MODULE_type==None:
-							raise ValueError('These weights are not supported.')
+							memo=os.path.basename(line+".safetensors")+' is not supported.'
+							return memo
 						key_name=[]
 						head=None
 						for k in sd:
@@ -483,8 +485,6 @@ class mokupipe:
 						wrapper, _ = create_lycoris_from_weights(multiplier=lora_weights[i],file="dummy.safetensors",module=self.pipe.unet, weights_sd=msd)
 						wrapper.merge_to()
 						del msd
-
-					print(line+".safetensors is loaded.")
 
 					list1,list2=getid(line+".safetensors",lora_weights[i])
 					meta_id_list=meta_id_list+list1
